@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <glib.h>
 
 int main(int argc, char **argv)
 {
-    printf("Hello!\n");
-    return 0;
+    g_print("Hello!\n");
+    return EXIT_SUCCESS;
 }
