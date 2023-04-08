@@ -1,0 +1,27 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "build",
+            "command": "cd builddir || meson setup builddir && cd builddir; meson compile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$meson-gcc"
+        },
+        {
+            "type": "shell",
+            "label": "clean",
+            "command": "cd builddir && meson clean",
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "test",
+            "command": "cd builddir && meson test",
+            "group": "test"
+        }
+    ],
+    "version": "2.0.0"
+}
