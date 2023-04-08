@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <glib.h>
 #include <glib-unix.h>
+#include <gio/gio.h>
 
+static void resolved_callback(GObject *source, GAsyncResult *result, gpointer data);
+
+static GResolver *resolver = NULL;
 static GMainLoop *loop = NULL;
 static gchar *server = NULL;
 
@@ -44,9 +48,28 @@ int main(int argc, char **argv)
 
     g_unix_signal_add(SIGTERM, signal_handler, NULL);
 
+    g_print("resolving %s...", server);
+    g_autoptr(GResolver) _resolver = resolver = g_resolver_get_default();
+    g_resolver_lookup_by_name_async(_resolver, server, NULL, resolved_callback, NULL);
+
     g_print("Running main loop");
     g_main_loop_run(_loop);
 
     g_print("Terminating");
     return EXIT_SUCCESS;
+}
+
+static void resolved_callback(GObject *source, GAsyncResult *result, gpointer data)
+{
+    g_autoptr(GError) error = NULL;
+    GList *addresses = g_resolver_lookup_by_name_finish(resolver, result, &error);
+
+    for (GList *a = addresses; a; a = a->next)
+    {
+        g_autofree gchar *address_string = g_inet_address_to_string(G_INET_ADDRESS(a->data));
+        g_print("Resolved: %s", address_string);
+    }
+
+    g_resolver_free_addresses(addresses);
+    g_main_loop_quit(loop);
 }
