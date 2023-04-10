@@ -1,26 +1,34 @@
 {
     "tasks": [
         {
+            "label": "meson setup",
             "type": "shell",
-            "label": "build",
-            "command": "cd builddir || meson setup builddir && cd builddir; meson compile",
+            "command": "meson setup builddir",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "meson compile",
+            "type": "shell",
+            "command": "meson compile -C builddir",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": "$meson-gcc"
+            "problemMatcher": "$meson-gcc",
+            "dependsOn": "meson setup"
         },
         {
+            "label": "meson test",
             "type": "shell",
-            "label": "clean",
-            "command": "cd builddir && meson clean",
-            "group": "build"
-        },
-        {
-            "type": "shell",
-            "label": "test",
-            "command": "cd builddir && meson test",
-            "group": "test"
+            "command": "meson test -C builddir",
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "dependsOn": "meson compile"
         }
     ],
     "version": "2.0.0"
