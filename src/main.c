@@ -63,6 +63,8 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
+static gboolean got_time = FALSE;
+
 static void resolved_callback(GObject *source, GAsyncResult *result, gpointer data)
 {
     g_autoptr(GError) error = NULL;
@@ -73,6 +75,7 @@ static void resolved_callback(GObject *source, GAsyncResult *result, gpointer da
         return;
     }
 
+    got_time = FALSE;
     for (GList *a = addresses; a; a = a->next)
     {
         GInetAddress *address = G_INET_ADDRESS(a->data);
@@ -80,6 +83,17 @@ static void resolved_callback(GObject *source, GAsyncResult *result, gpointer da
     }
 
     g_resolver_free_addresses(addresses);
+}
+
+static void set_rtc(time_t time)
+{
+    struct timespec ts;
+    ts.tv_sec = time;
+    ts.tv_nsec = 0;
+    if (clock_settime(CLOCK_REALTIME, &ts))
+    {
+        g_warning("Error setting RTC time: %s", strerror(errno));
+    }
 }
 
 static void time_received_callback(GObject *source, GAsyncResult *result, gpointer data)
@@ -92,5 +106,13 @@ static void time_received_callback(GObject *source, GAsyncResult *result, gpoint
         return;
     }
 
-    g_message("Got time from NTP server: %s", ctime(&time));
+    if (!got_time)
+    {
+        g_message("Got time from NTP server: %s", ctime(&time));
+        set_rtc(time);
+    }
+    else
+        g_info("Discarding late time from NTP server: %s", ctime(&time));
+
+    got_time = TRUE;
 }
