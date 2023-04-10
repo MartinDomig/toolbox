@@ -35,7 +35,7 @@ static void parse_options(int argc, char **argv)
 
 static gboolean signal_handler(gpointer user_data)
 {
-    g_print("Signal received");
+    g_message("Signal received");
     g_main_loop_quit(loop);
     return G_SOURCE_REMOVE;
 }
@@ -48,14 +48,14 @@ int main(int argc, char **argv)
 
     g_unix_signal_add(SIGTERM, signal_handler, NULL);
 
-    g_print("resolving %s...", server);
+    g_info("resolving %s...", server);
     g_autoptr(GResolver) _resolver = resolver = g_resolver_get_default();
     g_resolver_lookup_by_name_async(_resolver, server, NULL, resolved_callback, NULL);
 
-    g_print("Running main loop");
+    g_info("Running main loop");
     g_main_loop_run(_loop);
 
-    g_print("Terminating");
+    g_info("Terminating");
     return EXIT_SUCCESS;
 }
 
