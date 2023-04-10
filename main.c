@@ -3,7 +3,10 @@
 #include <glib-unix.h>
 #include <gio/gio.h>
 
+#include "ntp.h"
+
 static void resolved_callback(GObject *source, GAsyncResult *result, gpointer data);
+static void time_received_callback(GObject *source, GAsyncResult *result, gpointer data);
 
 static GResolver *resolver = NULL;
 static GMainLoop *loop = NULL;
@@ -66,10 +69,22 @@ static void resolved_callback(GObject *source, GAsyncResult *result, gpointer da
 
     for (GList *a = addresses; a; a = a->next)
     {
-        g_autofree gchar *address_string = g_inet_address_to_string(G_INET_ADDRESS(a->data));
-        g_print("Resolved: %s", address_string);
+        GInetAddress *address = G_INET_ADDRESS(a->data);
+        ntp_get_time_from_address_aysnc(address, time_received_callback, NULL);
     }
 
     g_resolver_free_addresses(addresses);
-    g_main_loop_quit(loop);
+}
+
+static void time_received_callback(GObject *source, GAsyncResult *result, gpointer data)
+{
+    g_autoptr(GError) error = NULL;
+    time_t time = ntp_get_time_from_address_finish(result, &error);
+    if (error)
+    {
+        g_warning("Error getting time from NTP server: %s", error->message);
+        return;
+    }
+
+    g_message("Got time from NTP server: %s", ctime(&time));
 }
