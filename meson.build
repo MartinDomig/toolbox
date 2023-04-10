@@ -6,8 +6,8 @@ deps = [
 ]
 
 sources = files([
-    'main.c',
-    'ntp.c',
+    'src/main.c',
+    'src/ntp.c',
 ])
 
 executable('demo',
