@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     g_autoptr(GMainLoop) _loop = loop = g_main_loop_new(NULL, FALSE);
 
     g_unix_signal_add(SIGTERM, signal_handler, NULL);
+    g_unix_signal_add(SIGINT, signal_handler, NULL);
 
     g_info("resolving %s...", server);
     g_autoptr(GResolver) _resolver = resolver = g_resolver_get_default();
@@ -66,6 +67,11 @@ static void resolved_callback(GObject *source, GAsyncResult *result, gpointer da
 {
     g_autoptr(GError) error = NULL;
     GList *addresses = g_resolver_lookup_by_name_finish(resolver, result, &error);
+    if (error)
+    {
+        g_warning("Error resolving host name: %s", error->message);
+        return;
+    }
 
     for (GList *a = addresses; a; a = a->next)
     {
