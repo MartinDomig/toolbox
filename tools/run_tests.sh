@@ -1,14 +1,8 @@
 #!/bin/sh
 
-. /prepare_tests.sh
+dbus-daemon --system --fork --nopidfile
+daemonize /lib/systemd/systemd-journald
 
-cd /builds/WV/wvcore
-rm -rf build
-mkdir build
-cd build
-meson setup .. -Dbuildtype=debug -Db_coverage=true -Dtests=true -Dfunction-tests=true
-meson compile
-meson install
-meson test
+su bob -c "rm -rf build; meson setup build; cd build; meson compile"
 
-/bin/bash
+su bob

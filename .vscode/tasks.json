@@ -1,35 +1,35 @@
 {
     "tasks": [
         {
-            "label": "meson setup",
+            "label": "build docker container",
             "type": "shell",
-            "command": "meson setup builddir",
+            "command": "docker build --pull --rm -f tools/Dockerfile -t toolbox:latest tools",
             "group": {
-                "kind": "build",
-                "isDefault": false
+                "kind": "build"
             }
         },
         {
-            "label": "meson compile",
+            "label": "compile in container",
             "type": "shell",
-            "command": "meson compile -C builddir",
+            "command": "docker run --rm -v ${workspaceFolder}:${workspaceFolder} -w ${workspaceFolder} toolbox:latest sh -c 'rm -rf build && meson setup build && meson compile -C build'",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "problemMatcher": "$meson-gcc",
-            "dependsOn": "meson setup"
+            "dependsOn": "build docker container"
         },
         {
-            "label": "meson test",
+            "label": "interactive container",
             "type": "shell",
-            "command": "meson test -C builddir",
+            "command": "docker run -it -v ${workspaceFolder}:${workspaceFolder} -w ${workspaceFolder} toolbox:latest",
             "group": {
-                "kind": "test",
-                "isDefault": false
+                "kind": "build",
+                "isDefault": true
             },
-            "dependsOn": "meson compile"
-        }
+            "problemMatcher": "$meson-gcc",
+            "dependsOn": "build docker container"
+        },
     ],
     "version": "2.0.0"
 }
